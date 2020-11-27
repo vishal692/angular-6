@@ -1,0 +1,41 @@
+<h1>Hi {{currentUser.fullname}}!</h1>
+<p>You're logged in Project</p>
+<h3>List Moments/images</h3>
+<!-- <ul>
+    <li *ngFor="let mom of moment">
+      <img  class="images" src={{mom.imgsrc}}/>
+        {{mom.tags}} {{mom.comment}}
+        - <a (click)="deleteUser(mom.id)" class="text-danger">Delete</a>
+    </li>
+</ul> -->
+<div class="" *ngIf="moment.length === 0">
+  No Data Found
+  <p><a [routerLink]="['/home']">Add new Images</a></p>
+</div>
+<div class="table-responsive bordered" *ngIf="moment.length > 0">
+     <table class="table">
+       <thead>
+         <tr>
+           <th>Sr No</th>
+           <th>Image</th>
+           <th>tags</th>
+           <th>Comment</th>
+           <th>Update</th>
+           <th>Delete</th>
+         </tr>
+       </thead>
+       <tbody>
+         <tr *ngFor="let mom of moment ; let i = index">
+           <td>{{i + 1}}</td>
+           <td><img  class="images" src={{mom.imgsrc}}/>
+           </td>
+           <td>{{mom.tags}}</td>
+           <td>
+               {{mom.comment}}
+           </td>
+           <td><a (click)="updateMoment(mom.id)" class="text-success">Update</a></td>
+           <td><a (click)="deleteUser(mom.id)" class="text-danger">Delete</a></td>
+         </tr>
+       </tbody>
+     </table>
+<p><a [routerLink]="['/login']">Logout</a></p>

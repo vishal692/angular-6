@@ -26,4 +26,16 @@ export class UserService {
     delete(id: number) {
         return this.http.delete(`${config.apiUrl}/users/` + id);
     }
+    updateMoment(id: number) {
+        return this.http.delete(`${config.apiUrl}/moment/update` + id);
+    }
+    addnewMoment(user: User) {
+      return this.http.post(`${config.apiUrl}/users/addnewMoment`, user);
+    }
+    getAllMoment() {
+        return this.http.get<User[]>(`${config.apiUrl}/moment`);
+    }
+    uploadImage(fd: any) {
+      return this.http.post(`${config.apiUrl}/users/addimagegallery`, fd);
+    }
 }

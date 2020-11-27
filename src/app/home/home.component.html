@@ -1,10 +1,28 @@
-﻿<h1>Hi {{currentUser.firstName}}!</h1>
-<p>You're logged in with Angular 6!!</p>
-<h3>All registered users:</h3>
-<ul>
-    <li *ngFor="let user of users">
-        {{user.username}} ({{user.firstName}} {{user.lastName}})
-        - <a (click)="deleteUser(user.id)" class="text-danger">Delete</a>
-    </li>
-</ul>
-<p><a [routerLink]="['/login']">Logout</a></p>
+<h2>Add New Moments/images</h2>
+<form [formGroup]="addnewMoment" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label for="files">Image</label><br>
+    <input type="file" name = " file" id ="file"(change)="onFileChanged($event)" accept="image/x-png,image/gif,image/jpeg">
+    <button class="btn btn-success" (click)="onUpload()">
+    Upload
+</button>
+</div>
+    <div class="form-group">
+        <label for="comment">Comment</label>
+        <input type="comment"  maxlength="100" formControlName="comment" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.comment.errors }" />
+        <div *ngIf="submitted && f.comment.errors" class="invalid-feedback">
+            <div *ngIf="f.comment.errors.required">Comment is required</div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="tags">Tags</label>
+        <input type="tags" formControlName="tags" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.tags.errors }" />
+        <div *ngIf="submitted && f.tags.errors" class="invalid-feedback">
+            <div *ngIf="f.tags.errors.required">Tags is required</div>
+        </div>
+    </div>
+    <div class="form-group">
+        <button [disabled]="loading"  class="btn btn-primary">Save</button>
+      <button [disabled]="loading"  (click)="showList()" class="btn btn-success">List</button>
+    </div>
+</form>

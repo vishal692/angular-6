@@ -11,6 +11,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         // array in local storage for registered users
         let users: any[] = JSON.parse(localStorage.getItem('users')) || [];
+        let newMoment: any[] = JSON.parse(localStorage.getItem('newMoment')) || [];
 
         // wrap in delayed observable to simulate server api call
         return of(null).pipe(mergeMap(() => {
@@ -19,7 +20,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             if (request.url.endsWith('/users/authenticate') && request.method === 'POST') {
                 // find if any user matches login credentials
                 let filteredUsers = users.filter(user => {
-                    return user.username === request.body.username && user.password === request.body.password;
+                    return user.email === request.body.email && user.password === request.body.password;
                 });
 
                 if (filteredUsers.length) {
@@ -27,16 +28,17 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                     let user = filteredUsers[0];
                     let body = {
                         id: user.id,
-                        username: user.username,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
+                        email: user.email,
+                        password: user.password,
+                        fullname: user.fullname,
+                        city: user.city,
                         token: 'fake-jwt-token'
                     };
 
                     return of(new HttpResponse({ status: 200, body: body }));
                 } else {
                     // else return 400 bad request
-                    return throwError({ error: { message: 'Username or password is incorrect' } });
+                    return throwError({ error: { message: 'email or password is incorrect' } });
                 }
             }
 
@@ -45,6 +47,16 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                 // check for fake auth token in header and return users if valid, this security is implemented server side in a real application
                 if (request.headers.get('Authorization') === 'Bearer fake-jwt-token') {
                     return of(new HttpResponse({ status: 200, body: users }));
+                } else {
+                    // return 401 not authorised if token is null or invalid
+                    return throwError({ status: 401, error: { message: 'Unauthorised' } });
+                }
+            }
+
+            if (request.url.endsWith('/moment') && request.method === 'GET') {
+                // check for fake auth token in header and return users if valid, this security is implemented server side in a real application
+                if (request.headers.get('Authorization') === 'Bearer fake-jwt-token') {
+                    return of(new HttpResponse({ status: 200, body: newMoment }));
                 } else {
                     // return 401 not authorised if token is null or invalid
                     return throwError({ status: 401, error: { message: 'Unauthorised' } });
@@ -74,15 +86,33 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                 let newUser = request.body;
 
                 // validation
-                let duplicateUser = users.filter(user => { return user.username === newUser.username; }).length;
+                let duplicateUser = users.filter(user => { return user.email === newUser.email; }).length;
                 if (duplicateUser) {
-                    return throwError({ error: { message: 'Username "' + newUser.username + '" is already taken' } });
+                    return throwError({ error: { message: 'email "' + newUser.email + '" is already taken' } });
                 }
 
                 // save new user
                 newUser.id = users.length + 1;
                 users.push(newUser);
                 localStorage.setItem('users', JSON.stringify(users));
+
+                // respond 200 OK
+                return of(new HttpResponse({ status: 200 }));
+            }
+
+            // register user
+            if (request.url.endsWith('/users/addnewMoment') && request.method === 'POST') {
+              console.log('vvvvvvvvvvvvvvvvvvvvvvvv', request.body);
+
+                // get new user object from post body
+                let moment = request.body;
+
+                // validation
+
+                // save new user
+                moment.id = newMoment.length + 1;
+                newMoment.push(moment);
+                localStorage.setItem('newMoment', JSON.stringify(newMoment));
 
                 // respond 200 OK
                 return of(new HttpResponse({ status: 200 }));
@@ -95,12 +125,12 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                     // find user by id in users array
                     let urlParts = request.url.split('/');
                     let id = parseInt(urlParts[urlParts.length - 1]);
-                    for (let i = 0; i < users.length; i++) {
-                        let user = users[i];
+                    for (let i = 0; i < newMoment.length; i++) {
+                        let user = newMoment[i];
                         if (user.id === id) {
                             // delete user
-                            users.splice(i, 1);
-                            localStorage.setItem('users', JSON.stringify(users));
+                            newMoment.splice(i, 1);
+                            localStorage.setItem('newMoment', JSON.stringify(newMoment));
                             break;
                         }
                     }
@@ -115,7 +145,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
             // pass through any requests not handled above
             return next.handle(request);
-            
+
         }))
 
         // call materialize and dematerialize to ensure delay even if an error is thrown (https://github.com/Reactive-Extensions/RxJS/issues/648)
